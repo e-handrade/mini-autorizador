@@ -1,0 +1,49 @@
+version: "3.7"
+
+services:
+
+  mongo:
+    image: mongo:4.2
+    hostname: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: miniautorizador
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - ./scripts/init.js:/docker-entrypoint-initdb.d/init.js:ro
+    networks:
+      - backend
+
+  app:
+    build: .
+    volumes:
+      - ./src:/app/src
+      - ./target:/app/target
+    container_name: mini-autorizador-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://user:password@mongo:27017/miniautorizador
+    networks:
+        - backend
+
+#  mysql:
+#    image: mysql:5.7
+#    hostname: mysql
+#    container_name: mysql
+#    restart: always
+#    ports:
+#      - "3306:3306"
+#    environment:
+#      MYSQL_DATABASE: miniautorizador
+#      MYSQL_ROOT_PASSWORD:
+#      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+networks:
+  backend:
+    driver: bridge
